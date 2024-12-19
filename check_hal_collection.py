@@ -1,8 +1,4 @@
-import requests
 import pandas as pd
-import regex as re
-from unidecode import unidecode
-from langdetect import detect
 from tqdm import tqdm
 import tkinter as tk
 from tkinter import filedialog as fd
@@ -12,7 +8,7 @@ tqdm.pandas()
 tk.Tk().withdraw()
 
 #-----------------User inputs----------------------------------------#
-collection_a_chercher=tk.simpledialog.askstring(prompt="Entrez le code de la collection HAL de votre structure",title='Code de la collection')
+collection_a_chercher=tk.simpledialog.askstring(prompt="Entrez le code de la collection HAL de votre structure",title='Code de la collection').upper()
 fichier=fd.askopenfilename(title='Choisissez le fichier qui contient les publications à vérifier')
 
 #------------------Load data to compare------------------------------#
@@ -34,7 +30,7 @@ if valid==True:
 
 #----------------------Execute main task-----------------------------#
 coll_df['nti']=coll_df['Titres'].apply(lambda x : normalise(x).strip())
-check_df(publis_a_checker)
+check_df(publis_a_checker,coll_df)
 
 #---------------------Export output----------------------------------#
 publis_a_checker.to_excel(fichier.replace(".xlsx","_traite.xlsx"),index=False)

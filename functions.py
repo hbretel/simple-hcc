@@ -1,5 +1,7 @@
-import regex as re
-from config import escapeRules, hal_fl
+import regex as re, requests
+from config import escapeRules, hal_fl, endpoint
+from langdetect import detect
+from unidecode import unidecode
 
 def escapedSeq(term):
     """ Yield the next string based on the        
@@ -13,7 +15,7 @@ def escapedSeq(term):
 
 def escapeSolrArg(term):
     """ Apply escaping to the passed in query terms       
-    escaping special characters like : , etc"""
+    escaping special characters like : , etc."""
     term = term.replace('\\',r'\\') # escape \ first
     return"".join([nextStr for nextStr in escapedSeq(term)])
 
@@ -33,41 +35,49 @@ def compare_inex(nti,cti):
             return cti if  re.fullmatch("("+nti+"){"+f"e<={int(len(cti)/10)}"+"}",cti) else False
     return False
 
-def ex_in_coll(ti):
+def ex_in_coll(ti,coll_df):
     """Takes a title from the list to be compared. If it is in the list of titles from the compared HAL collection, 
     returns the corresponding HAL reference. Else, returns False."""
     try:
-        return ["titre trouvé dans la collection : probablement déjà présent",ti,coll_df[coll_df['Titres']==ti].iloc[0,0]]
+        return ["Titre trouvé dans la collection : probablement déjà présent",
+                ti,
+                coll_df[coll_df['Titres']==ti].iloc[0,0],
+                coll_df[coll_df['Titres']==ti].iloc[0,3]]
     except IndexError:
         return False
 
-def inex_in_coll(nti):
+def inex_in_coll(nti,coll_df):
     """Takes a title from the list to be compared. If it has at least 90% similarity with one of the titles from the compared HAL collection, 
     returns the corresponding HAL reference. Else, returns False."""
     for x in list(coll_df['nti']):
         y = compare_inex(nti,x)
         if y: 
-            return ["titre approchant trouvé dans la collection : à vérifier",coll_df[coll_df['nti']==y].iloc[0,2],coll_df[coll_df['nti']==y].iloc[0,0]]
+            return ["Titre approchant trouvé dans la collection : à vérifier",
+                    coll_df[coll_df['nti']==y].iloc[0,2],
+                    coll_df[coll_df['nti']==y].iloc[0,0],
+                    coll_df[coll_df['nti']==y].iloc[0,3]]
     return False
 
 def in_hal(nti,ti):
     """Tries to find a title in HAL, first with a strict character match then if not found with a loose SolR search"""
     try:
-        r_ex=requests.get(f"{endpoint}?q=title_t:{nti}&rows=1&fl=docid,title_s").json()['response']
+        r_ex=requests.get(f"{endpoint}?q=title_t:{nti}&rows=1&fl={hal_fl}").json()['response']
         if r_ex['numFound'] >0:
             if any(ti==x for x in r_ex['docs'][0]['title_s']):
-                return ["titre trouvé dans HAL mais hors de la collection : affiliation probablement à corriger",
+                return ["Titre trouvé dans HAL mais hors de la collection : affiliation probablement à corriger",
                         r_ex['docs'][0]['title_s'][0],
-                        r_ex['docs'][0]['docid']]
+                        r_ex['docs'][0]['docid'],
+                        r_ex['docs'][0]['submitType_s']]
     except KeyError:
-        r_inex=requests.get(f"{endpoint}?q=title_t:{ti}&rows=1&fl=docid,title_s").json()['response']
+        r_inex=requests.get(f"{endpoint}?q=title_t:{ti}&rows=1&fl={hal_fl}").json()['response']
         if r_inex['numFound'] >0:
-            return ["titre approchant trouvé dans HAL mais hors de la collection : vérifier les affiliations",
+            return ["Titre approchant trouvé dans HAL mais hors de la collection : vérifier les affiliations",
                     r_inex['response']['docs'][0]['title_s'][0],
-                    r_inex['response']['docs'][0]['docid']] if any(compare_inex(ti,x) for x in [r_inex['response']['docs'][0]['title_s']]) else ["hors HAL","",""]
-    return ["hors HAL","",""]
+                    r_inex['response']['docs'][0]['docid'],
+                    r_ex['docs'][0]['submitType_s']] if any(compare_inex(ti,x) for x in [r_inex['response']['docs'][0]['title_s']]) else ["Hors HAL","","",""]
+    return ["Hors HAL","","",""]
 
-def statut_titre(title):
+def statut_titre(title,coll_df):
     """Applies the matching process to a title, from searching it exactly in the HAL collection to be compared, to searching it loosely in HAL search API."""
     try:
         title=title[re.match(r".*\[",title).span()[1]:] if title[len(title)-1]=="]" and detect(title[:re.match(r".*\[",ti).span()[1]]) != detect(title[re.match(r".*\[",title).span()[1]:]) else title      
@@ -76,39 +86,44 @@ def statut_titre(title):
     try:
         ti='\"'+escapeSolrArg(title)+'\"'
     except TypeError:
-        return ["titre invalide","",""]
+        return ["Titre invalide","","",""]
     try:
-        c_ex=ex_in_coll(title)
+        c_ex=ex_in_coll(title,coll_df)
         if c_ex:
             return c_ex
         else:
-            c_inex = inex_in_coll(title)
+            c_inex = inex_in_coll(title,coll_df)
             if c_inex:
                 return c_inex
             else:
                 r_ex=in_hal(ti,title)
                 return r_ex
     except KeyError:
-        return ["titre incorrect, probablement absent de HAL","",""]
+        return ["Titre incorrect, probablement absent de HAL","","",""]
 
-def statut_doi(do):
+def statut_doi(do,coll_df):
     """applies the matching process to a DOI, searching it in the collection to be compared then in all of HAL"""
+    dois_coll=coll_df['DOIs'].tolist()
     if do==do:
         ndo=re.sub(r"\[.*\]","",do.replace("https://doi.org/","").lower())
         if do in dois_coll:
-            return ["Dans la collection",coll_df[coll_df['DOIs']==do].iloc[0,2],coll_df[coll_df['DOIs']==do].iloc[0,0]]
+            return ["Dans la collection",
+                    coll_df[coll_df['DOIs']==do].iloc[0,2],
+                    coll_df[coll_df['DOIs']==do].iloc[0,0],
+                    coll_df[coll_df['DOIs']==do].iloc[0,3]]
         else:
-            r=requests.get(f"{endpoint}?q=doiId_id:{ndo}&rows=1&fl=docid,title_s").json()
+            r=requests.get(f"{endpoint}?q=doiId_id:{ndo}&rows=1&fl={hal_fl}").json()
             if r['response']['numFound'] >0:
                 return ["Dans HAL mais hors de la collection",
                         r['response']['docs'][0]['title_s'][0],
-                        r['response']['docs'][0]['docid']]
-            return ["hors HAL","",""]
+                        r['response']['docs'][0]['docid'],
+                        r['response']['docs'][0]['submitType_s']]
+            return ["Hors HAL","","",""]
     elif do!=do:
-        return ["pas de DOI valide","",""]
+        return ["Pas de DOI valide","","",""]
 
-def check_df(df):
+def check_df(df,coll_df):
     """Applies the full process to the dataframe or table given as an input."""
-    df[['Statut','titre_si_trouvé','url_hal_si_trouvé']]=df.progress_apply(lambda x:statut_doi(x['doi']) 
-                                                                           if statut_doi(x['doi'])[0] in ("Dans la collection","Dans HAL mais hors de la collection") 
-                                                                           else statut_titre(x['Title']),axis=1).tolist()
+    df[['Statut','titre_si_trouvé','identifiant_hal_si_trouvé','statut_dépôt_si_trouvé']]=df.progress_apply(lambda x:statut_doi(x['doi'],coll_df) 
+                                                                           if statut_doi(x['doi'],coll_df)[0] in ("Dans la collection","Dans HAL mais hors de la collection") 
+                                                                           else statut_titre(x['Title'],coll_df),axis=1).tolist()
