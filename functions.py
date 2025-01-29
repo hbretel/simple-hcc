@@ -105,7 +105,7 @@ def statut_doi(do,coll_df):
     """applies the matching process to a DOI, searching it in the collection to be compared then in all of HAL"""
     dois_coll=coll_df['DOIs'].tolist()
     if do==do:
-        ndo=re.sub(r"\[.*\]","",do.replace("https://doi.org/","").lower())
+        ndo=escapeSolrArg(re.sub(r"\[.*\]","",do.replace("https://doi.org/","").lower()))
         if do in dois_coll:
             return ["Dans la collection",
                     coll_df[coll_df['DOIs']==do].iloc[0,2],
