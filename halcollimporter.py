@@ -6,7 +6,7 @@ class HalCollImporter:
     def __init__(self,coll_code:str,start_year=None,end_year=None):
         self.coll_code=coll_code
         self.start_year=start_year if start_year != None else default_start
-        self.end_year=end_year if end_year != None else default_start
+        self.end_year=end_year if end_year != None else default_end
         self.nbdocs=self.get_nb_docs()
 
     def get_nb_docs(self):

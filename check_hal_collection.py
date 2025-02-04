@@ -16,8 +16,8 @@ publis_a_checker=pd.read_excel(fichier)
 publis_a_checker.rename({"DOI":'doi',"display_name":"Title","Article Title":"Title","Publication Year":"Year"},axis='columns',inplace=True)
 publis_a_checker['Statut']=''
 if "Year" in publis_a_checker.columns:
-    date_debut=min(publis_a_checker['Year'].tolist())-1
-    date_fin=max(publis_a_checker['Year'].tolist())+1
+    date_debut=int(min(publis_a_checker['Year'].tolist())-1)
+    date_fin=int(max(publis_a_checker['Year'].tolist())+1)
 else:
     date_debut=None
     date_fin=None
