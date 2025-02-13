@@ -74,13 +74,19 @@ def in_hal(nti,ti):
             return ["Titre approchant trouvé dans HAL mais hors de la collection : vérifier les affiliations",
                     r_inex['response']['docs'][0]['title_s'][0],
                     r_inex['response']['docs'][0]['docid'],
-                    r_ex['docs'][0]['submitType_s']] if any(compare_inex(ti,x) for x in [r_inex['response']['docs'][0]['title_s']]) else ["Hors HAL","","",""]
+                    r_ex['docs'][0]['submitType_s']] if any(
+                        compare_inex(ti,x) for x in [r_inex['response']['docs'][0]['title_s']]
+                        ) else ["Hors HAL","","",""]
     return ["Hors HAL","","",""]
 
 def statut_titre(title,coll_df):
     """Applies the matching process to a title, from searching it exactly in the HAL collection to be compared, to searching it loosely in HAL search API."""
     try:
-        title=title[re.match(r".*\[",title).span()[1]:] if title[len(title)-1]=="]" and detect(title[:re.match(r".*\[",ti).span()[1]]) != detect(title[re.match(r".*\[",title).span()[1]:]) else title      
+        if title[len(title)-1]=="]" and detect(title[:re.match(r".*\[",ti).span()[1]]) != detect(title[re.match(r".*\[",title).span()[1]:]):
+            title=title[re.match(r".*\[",title).span()[1]:]
+        elif detect(title[:len(title)/2]) != detect(title[len(title)/2:]):
+            title=title[:len(title)/2]
+        else: title=title
     except:
         title=title
     try:
@@ -124,6 +130,8 @@ def statut_doi(do,coll_df):
 
 def check_df(df,coll_df):
     """Applies the full process to the dataframe or table given as an input."""
-    df[['Statut','titre_si_trouvé','identifiant_hal_si_trouvé','statut_dépôt_si_trouvé']]=df.progress_apply(lambda x:statut_doi(x['doi'],coll_df) 
-                                                                           if statut_doi(x['doi'],coll_df)[0] in ("Dans la collection","Dans HAL mais hors de la collection") 
-                                                                           else statut_titre(x['Title'],coll_df),axis=1).tolist()
+    df[['Statut','titre_si_trouvé','identifiant_hal_si_trouvé','statut_dépôt_si_trouvé']]=df.progress_apply(
+        lambda x:statut_doi(x['doi'],coll_df) 
+        if statut_doi(x['doi'],coll_df)[0] in ("Dans la collection","Dans HAL mais hors de la collection") 
+        else statut_titre(x['Title'],coll_df),axis=1
+        ).tolist()

@@ -12,8 +12,11 @@ collection_a_chercher=tk.simpledialog.askstring(prompt="Entrez le code de la col
 fichier=fd.askopenfilename(title='Choisissez le fichier qui contient les publications à vérifier')
 
 #------------------Load data to compare------------------------------#
-publis_a_checker=pd.read_excel(fichier)
-publis_a_checker.rename({"DOI":'doi',"display_name":"Title","Article Title":"Title","Publication Year":"Year"},axis='columns',inplace=True)
+try:
+    publis_a_checker=pd.read_excel(fichier)
+except ValueError:
+    publis_a_checker=pd.read_csv(fichier)
+publis_a_checker.rename({"doiId_s":'doi',"DOI":'doi',"title_s":"Title","title":"Title","display_name":"Title","Article Title":"Title","Publication Year":"Year"},axis='columns',inplace=True)
 publis_a_checker['Statut']=''
 if "Year" in publis_a_checker.columns:
     date_debut=int(min(publis_a_checker['Year'].tolist())-1)
@@ -33,4 +36,6 @@ coll_df['nti']=coll_df['Titres'].apply(lambda x : normalise(x).strip())
 check_df(publis_a_checker,coll_df)
 
 #---------------------Export output----------------------------------#
-publis_a_checker.to_excel(fichier.replace(".xlsx","_traite.xlsx"),index=False)
+if ".xlsx" in fichier :
+    publis_a_checker.to_excel(fichier.replace(".xlsx","_traite.xlsx"),index=False)
+else : publis_a_checker.to_excel(fichier.replace(".csv","_traite.xlsx"),index=False)
