@@ -112,7 +112,7 @@ def statut_doi(do,coll_df):
     dois_coll=coll_df['DOIs'].tolist()
     if do==do:
         ndo=escapeSolrArg(re.sub(r"\[.*\]","",do.replace("https://doi.org/","").lower()))
-        if do in dois_coll:
+        if do.lower() in dois_coll:
             return ["Dans la collection",
                     coll_df[coll_df['DOIs']==do].iloc[0,2],
                     coll_df[coll_df['DOIs']==do].iloc[0,0],
