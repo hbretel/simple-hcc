@@ -29,7 +29,7 @@ def compare_inex(nti,cti):
     nti=normalise(nti).strip()
     if len(nti)*1.1 > len(cti) > len(nti)*0.9:
         if len(cti) > 50:
-            if re.fullmatch("("+nti[:50]+"){5}",cti[:50]):
+            if re.fullmatch("("+nti[:50]+"){e<=5}",cti[:50]):
                 return cti if  re.fullmatch("("+nti+"){"+f"e<={int(len(cti)/10)}"+"}",cti) else False
         else:
             return cti if  re.fullmatch("("+nti+"){"+f"e<={int(len(cti)/10)}"+"}",cti) else False
@@ -111,12 +111,13 @@ def statut_doi(do,coll_df):
     """applies the matching process to a DOI, searching it in the collection to be compared then in all of HAL"""
     dois_coll=coll_df['DOIs'].tolist()
     if do==do:
+        ldo=do.lower()
         ndo=escapeSolrArg(re.sub(r"\[.*\]","",do.replace("https://doi.org/","").lower()))
-        if do.lower() in dois_coll:
+        if ldo in dois_coll:
             return ["Dans la collection",
-                    coll_df[coll_df['DOIs']==do].iloc[0,2],
-                    coll_df[coll_df['DOIs']==do].iloc[0,0],
-                    coll_df[coll_df['DOIs']==do].iloc[0,3]]
+                    coll_df[coll_df['DOIs']==ldo].iloc[0,2],
+                    coll_df[coll_df['DOIs']==ldo].iloc[0,0],
+                    coll_df[coll_df['DOIs']==ldo].iloc[0,3]]
         else:
             r=requests.get(f"{endpoint}?q=doiId_id:{ndo}&rows=1&fl={hal_fl}").json()
             if r['response']['numFound'] >0:
