@@ -11,3 +11,6 @@ Process is as follows :
 - if no subprocess gets any match, "Not found in HAL" status is added to the publication
 
 For publications found in HAL, now retrieves the submit type to check if fulltext is available or if there is only a metadata notice.
+
+## Streamlit version
+A streamlit-based, user-friendly version of this code has been developed by Guillaume Godet. You can [check it out](https://github.com/guillaumegodet/c2LabHAL) !
