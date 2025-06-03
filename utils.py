@@ -5,8 +5,7 @@ import json
 import regex as re
 from unidecode import unidecode
 from difflib import get_close_matches
-from langdetect import detect # Bien que non utilisé directement, gardé si une fonction importée en dépend
-from tqdm import tqdm 
+from tqdm import tqdm
 from streamlit import delta_generator
 
 tqdm.pandas()
