@@ -10,11 +10,11 @@ from streamlit import delta_generator
 
 tqdm.pandas()
 
-# --- Constantes Partagées ---
+# --- Shared constants ---
 HAL_API_ENDPOINT = "http://api.archives-ouvertes.fr/search/"
-# Ajout de uri_s pour récupérer l'URL directe de la notice HAL
+# uri_s used to fetch publication full text in HAL
 HAL_FIELDS_TO_FETCH = "docid,doiId_s,title_s,submitType_s,uri_s"
-DEFAULT_START_YEAR = 2018
+DEFAULT_START_YEAR = 2020
 DEFAULT_END_YEAR = '*' 
 
 SOLR_ESCAPE_RULES = {
@@ -23,7 +23,7 @@ SOLR_ESCAPE_RULES = {
     '~': r'\~', '*': r'\*', '?': r'\?', ':': r'\:', '"': r'\"'
 }
 
-# --- Fonctions Utilitaires ---
+# --- Utilitary funcs ---
 
 def _display_long_warning(base_message, item_identifier, item_value, exception_details, max_len=70):
     """
@@ -275,21 +275,6 @@ def statut_doi(doi_to_check, collection_df):
         _display_long_warning("Structure de réponse HAL inattendue ou erreur JSON", "DOI", doi_to_check, e_json)
         
     return ["Hors HAL", "", "", "", ""] # Ensure 7 elements are returned
-
-def addCaclLinkFormula(pre_url_str, post_url_str, text_for_link):
-    if post_url_str and text_for_link: 
-        pre_url_cleaned = str(pre_url_str if pre_url_str else "").strip()
-        post_url_cleaned = str(post_url_str).strip()
-        text_cleaned = str(text_for_link).strip().replace('"', '""') 
-
-        full_url = f"{pre_url_cleaned}{post_url_cleaned}"
-        
-        display_text_final = text_cleaned
-        if len(text_cleaned) > 50: 
-            display_text_final = text_cleaned[:47] + "..."
-            
-        return f'=HYPERLINK("{full_url}";"{display_text_final}")'
-    return "" 
 
 def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generator.DeltaGenerator|bool=False):
     if input_df_to_check.empty:
