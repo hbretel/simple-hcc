@@ -21,7 +21,7 @@ def main():
         "Collection HAL",
         value="", # TODO forcer le remplissage du champ avant validation
         key="collection_hal",
-        help="Saisissez le code de la collection HAL du laboratoire (ex: CIAMS). Laissez vide pour comparer avec tout HAL (non recommandé, très long)."
+        help="Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)"
     )
 
     openalex_institution_id = st.text_input("Identifiant OpenAlex du labo", help="Saisissez l'identifiant du labo dans OpenAlex (ex: i4210093696 pour CIAMS).")
@@ -29,7 +29,7 @@ def main():
     uploaded_file = st.file_uploader(
         "Téléversez un fichier CSV ou Excel", 
         type=["xlsx", "xls", "csv"],
-        help="Votre fichier CSV doit contenir au minimum une colonne 'doi' ou une colonne 'Title'. Les deux sont recommandées."
+        help="Votre fichier CSV doit contenir au minimum une colonne 'doi' et une colonne 'Title'."
     )
     
     
