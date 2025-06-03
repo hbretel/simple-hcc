@@ -5,7 +5,7 @@ from io import BytesIO
 
 from utils import (
     get_openalex_data, convert_to_dataframe,
-    clean_doi, HalCollImporter, merge_rows_with_sources,
+    clean_doi, HalCollImporter,
     check_df
 )
 
@@ -27,7 +27,7 @@ def main():
     uploaded_file = st.file_uploader(
         "Téléversez un fichier CSV ou Excel", 
         type=["xlsx", "xls", "csv"],
-        help="Votre fichier CSV doit contenir au minimum une colonne 'doi' et une colonne 'Title'."
+        help="Votre fichier CSV ou Excel doit contenir au minimum une colonne 'doi' et une colonne 'Title'."
     )
     
     
@@ -44,7 +44,7 @@ def main():
         tabular_df = pd.DataFrame()
         openalex_df = pd.DataFrame()
         
-        # --- Étape 1 : Récupération des données OpenAlex ---
+        # --- Step 1 : Fetch OpenAlex data ---
         if openalex_institution_id and collection_a_chercher:
             with st.spinner("Récupération OpenAlex..."):
                 progress_bar.progress(20,"Étape 1/6 : Récupération des données OpenAlex...")
@@ -60,21 +60,21 @@ def main():
                                 else None)
                     except KeyError:
                         pass
-                    # Utiliser .get() pour éviter KeyError si la colonne manque après conversion
+                    # Utiliser .get() to avoid KeyError
                     openalex_df['Date'] = openalex_df.get('publication_date', pd.Series(index=openalex_df.index, dtype='object'))
                     openalex_df['doi'] = openalex_df.get('doi', pd.Series(index=openalex_df.index, dtype='object'))
                     openalex_df['id'] = openalex_df.get('id', pd.Series(index=openalex_df.index, dtype='object')) 
                     openalex_df['Title'] = openalex_df.get('title', pd.Series(index=openalex_df.index, dtype='object'))
                     
-                    cols_to_keep = ['Data source', 'Title', 'doi', 'id', 'Source title', 'Date'] # 'Data source' est déjà là
-                    # S'assurer que toutes les colonnes à garder existent avant de les sélectionner
+                    cols_to_keep = ['Data source', 'Title', 'doi', 'id', 'Source title', 'Date'] # 'Data source' is already added
+                    # Ensure all needed columns are here before selecting them
                     openalex_df = openalex_df[[col for col in cols_to_keep if col in openalex_df.columns]]
                     if 'doi' in openalex_df.columns:
                         openalex_df['doi'] = openalex_df['doi'].apply(clean_doi)
                 st.success(f"{len(openalex_df)} publications trouvées sur OpenAlex.")
         progress_bar.progress(10)
 
-        # --- Étape 2 : Récupération des données tabulaires ---
+        # --- Step 2 : Fetch tabular data from upload ---
         if uploaded_file and collection_a_chercher:
             with st.spinner("Chargement des données du fichier source..."):
                 progress_bar.progress(25, "Étape 2/6 : Récupération des données du fichier source...")
@@ -101,18 +101,18 @@ def main():
                     st.error("Le fichier CSV doit contenir au moins une colonne 'doi' et une colonne 'Title'.")
                     return None
 
-                if 'doi' in df_input.columns: # Nettoyer les DOI
+                if 'doi' in df_input.columns: # clean up DOIs
                     df_input['doi'] = df_input['doi'].astype(str).str.lower().str.strip().replace(['nan', ''], pd.NA)
                 
                 tabular_df=df_input
 
-        elif not collection_a_chercher: # collection_a_chercher_csv est requis ici
+        elif not collection_a_chercher: # collection_a_chercher_csv is required here
             st.error("Veuillez spécifier un code de collection HAL à comparer.")
 
 
-        # --- Étape 3 : Combinaison des données ---
+        # --- Step 3 : Combine data ---
         progress_bar.progress(28,"Étape 3/6 : Combinaison des données sources...")
-        combined_df = pd.concat([tabular_df, openalex_df], ignore_index=True)
+        combined_df = pd.concat([openalex_df, tabular_df], ignore_index=True)
 
         if combined_df.empty:
             st.error("Aucune publication n'a été récupérée. Vérifiez vos paramètres.")
@@ -120,21 +120,18 @@ def main():
         
         if 'doi' in combined_df.columns:
             combined_df['doi'] = combined_df['doi'].apply( lambda x :clean_doi(x.lower().strip()) if isinstance(x,str) else pd.NA)
-            # combined_df['doi'] = combined_df['doi'].replace(['nan', ''], pd.NA)
 
 
-        # --- Étape 4 : Fusion des lignes en double ---
+        # --- Step 4 : Merge duplicate rows ---
         progress_bar.progress(30, "Étape 4/6 : Fusion des doublons...")
         
         with_doi_df = combined_df[combined_df['doi'].notna()].copy()
         without_doi_df = combined_df[combined_df['doi'].isna()].copy()
 
-        merged_data_doi = pd.DataFrame()
         if not with_doi_df.empty:
-            merged_data_doi = with_doi_df.groupby('doi', as_index=False).apply(merge_rows_with_sources)
-            # S'assurer que 'doi' est une colonne après groupby().apply().reset_index() ou équivalent
-            if 'doi' not in merged_data_doi.columns and merged_data_doi.index.name == 'doi':
-                merged_data_doi.reset_index(inplace=True)
+            merged_data_doi = with_doi_df.drop_duplicates(subset='doi', ignore_index=True)
+        else:
+            merged_data_doi=pd.DataFrame()
 
         merged_data = pd.concat([merged_data_doi, without_doi_df], ignore_index=True)
 
@@ -144,7 +141,7 @@ def main():
         st.success(f"{len(merged_data)} publications uniques après fusion.")
         progress_bar.progress(50)
 
-        # --- Étape 5 : Comparaison avec HAL ---
+        # --- Step 5 : Compare with HAL ---
         coll_df = pd.DataFrame() 
         if collection_a_chercher: 
             with st.spinner(f"Importation de la collection HAL '{collection_a_chercher}'..."):
@@ -160,7 +157,7 @@ def main():
         
         final_df = check_df(merged_data.copy(), coll_df, progress_bar_st=progress_bar) 
         st.success("Comparaison avec HAL terminée.")
-        # progress_bar est géré par check_df ensuite
+        # progress_bar is then managed by check_df
 
         
         st.dataframe(final_df)

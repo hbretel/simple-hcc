@@ -337,27 +337,6 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
     if progress_bar_st: progress_bar_st.progress(100)  # type: ignore
     return df_to_process
 
-def merge_rows_with_sources(grouped_data):
-    merged_ids_str = '|'.join(map(str, grouped_data['id'].dropna().astype(str).unique())) if 'id' in grouped_data.columns else None
-    merged_sources_str = '|'.join(grouped_data['Data source'].dropna().astype(str).unique()) if 'Data source' in grouped_data.columns else None
-    merged_row_content_dict = {}
-
-    for column_name in grouped_data.columns:
-        if column_name not in ['id', 'Data source']:
-            unique_values_in_col = grouped_data[column_name].dropna().astype(str).unique()
-            
-            if len(unique_values_in_col) == 1:
-                merged_row_content_dict[column_name] = unique_values_in_col[0]
-            elif len(unique_values_in_col) > 1:
-                merged_row_content_dict[column_name] = '|'.join(sorted(list(unique_values_in_col)))
-            else: 
-                merged_row_content_dict[column_name] = pd.NA 
-    
-    if merged_ids_str is not None: merged_row_content_dict['id'] = merged_ids_str
-    if merged_sources_str is not None: merged_row_content_dict['Data source'] = merged_sources_str
-    
-    return pd.Series(merged_row_content_dict)
-
 
 class HalCollImporter:
     def __init__(self, collection_code: str, start_year_val=None, end_year_val=None):
