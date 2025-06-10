@@ -350,8 +350,7 @@ def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
                                                       "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
                                                       "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"
                                                       })
-                else:
-                    return row['Statut_HAL']
+    return row['Statut_HAL']
 
 
 class HalCollImporter:

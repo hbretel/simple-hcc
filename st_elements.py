@@ -81,7 +81,7 @@ def reach_process(years, collection_a_chercher, message = "Valider et lancer la 
         st.session_state['navigation'] = "process.py"
         st.rerun()
 
-def process(collection_a_chercher,start_year, end_year) -> pd.DataFrame:
+def fetch_hal_col(collection_a_chercher,start_year, end_year) -> pd.DataFrame:
     coll_importer = HalCollImporter(collection_a_chercher, start_year-1, end_year+1)
     coll_df = coll_importer.import_data() 
     if coll_df.empty:

@@ -1,6 +1,6 @@
 import streamlit as st
 from utils import check_df, check_annees
-from st_elements import process, reset_session
+from st_elements import fetch_hal_col, reset_session
 from io import BytesIO
 
 st.set_page_config(page_title="HAL collection Checker")
@@ -8,7 +8,7 @@ st.title("Comparaison des données avec HAL")
 
 with st.spinner("Comparaison en cours..."):
     merged_data = st.session_state['merged']
-    coll_df = process(st.session_state['hal_collection'],
+    coll_df = fetch_hal_col(st.session_state['hal_collection'],
                     start_year=st.session_state.years['start'] - 1,
                     end_year=st.session_state.years['end'] + 1)
     progress_bar = st.progress(0, text="Etat d'avancement de la comparaison :" )
