@@ -81,10 +81,11 @@ def reach_process(years, collection_a_chercher, message = "Valider et lancer la 
         st.session_state['navigation'] = "process.py"
         st.rerun()
 
-def process(collection_a_chercher,start_year, end_year):
+def process(collection_a_chercher,start_year, end_year) -> pd.DataFrame:
     coll_importer = HalCollImporter(collection_a_chercher, start_year-1, end_year+1)
     coll_df = coll_importer.import_data() 
     if coll_df.empty:
         st.warning(f"La collection HAL '{collection_a_chercher}' est vide ou n'a pas pu être chargée pour les années {start_year}-{end_year}.")
+        return coll_df
     else:
         return coll_df
