@@ -14,7 +14,7 @@ with st.spinner("Comparaison en cours..."):
     progress_bar = st.progress(0, text="Etat d'avancement de la comparaison :" )
     # progress_bar is then managed by check_df
     final_df = check_df(merged_data.copy(), coll_df, progress_bar_st=progress_bar)
-    final_df['Statut_HAL'] = final_df.apply(lambda x : check_annees(x, st.session_state['hal_collection'], st.session_state.years['start'],st.session_state.years['end']))
+    final_df['Statut_HAL'] = final_df.apply(lambda x : check_annees(x, st.session_state['hal_collection'], st.session_state.years['start'],st.session_state.years['end']),axis=1)
 st.success("Comparaison avec HAL terminée.")
 st.subheader("Résultat de la vérification :")
 st.dataframe(final_df)
