@@ -340,17 +340,16 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
 def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
     if row['Statut_HAL'] in ["Dans la collection", 
                              "Titre trouvé dans la collection : probablement déjà présent",
-                             "Titre approchant trouvé dans la collection : à vérifier"]:
-        if row["identifiant_hal_si_trouvé"]:
-            docid = row["identifiant_hal_si_trouvé"]
-            if docid in hal_collection['Hal_ids']:
-                if int(hal_collection.set_index('Hal_ids')[docid]["Années de publication"]) > end \
-                or int(hal_collection.set_index('Hal_ids')[docid]["Années de publication"]) < start:
-                    return row['Statut_HAL'].replace({"Dans la collection" : "Dans la collection mais année HAL incorrecte",
+                             "Titre approchant trouvé dans la collection : à vérifier"] \
+    and row["identifiant_hal_si_trouvé"] in hal_collection['Hal_ids'] \
+    and (int(hal_collection.set_index('Hal_ids')[row["identifiant_hal_si_trouvé"]]["Années de publication"]) > end \
+         or int(hal_collection.set_index('Hal_ids')[row["identifiant_hal_si_trouvé"]]["Années de publication"]) < start):
+        return row['Statut_HAL'].replace({"Dans la collection" : "Dans la collection mais année HAL incorrecte",
                                                       "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
                                                       "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"
                                                       })
-    return row['Statut_HAL']
+    else:
+        return row['Statut_HAL']
 
 
 class HalCollImporter:
