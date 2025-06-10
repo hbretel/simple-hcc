@@ -13,7 +13,7 @@ tqdm.pandas()
 # --- Shared constants ---
 HAL_API_ENDPOINT = "http://api.archives-ouvertes.fr/search/"
 # uri_s used to fetch publication full text in HAL
-HAL_FIELDS_TO_FETCH = "docid,doiId_s,title_s,submitType_s,uri_s"
+HAL_FIELDS_TO_FETCH = "docid,doiId_s,title_s,submitType_s,publicationDateY_i,uri_s"
 DEFAULT_START_YEAR = 2020
 DEFAULT_END_YEAR = '*' 
 
@@ -325,7 +325,7 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
         
         if progress_bar_st:
             current_progress_val = (index + 1) / total_rows_to_process
-            progress_bar_st.progress(int(50 + (current_progress_val * 50)), "Étape 6/6 : Comparaison avec les données HAL...") # type: ignore
+            progress_bar_st.progress(current_progress_val) # type: ignore
 
     # Add new columns to the DataFrame
     df_to_process['Statut_HAL'] = statuts_hal_list
@@ -337,13 +337,28 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
     if progress_bar_st: progress_bar_st.progress(100)  # type: ignore
     return df_to_process
 
+def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
+    if row['Statut_HAL'] in ["Dans la collection", 
+                             "Titre trouvé dans la collection : probablement déjà présent",
+                             "Titre approchant trouvé dans la collection : à vérifier"]:
+        if row["identifiant_hal_si_trouvé"]:
+            docid = row["identifiant_hal_si_trouvé"]
+            if docid in hal_collection['Hal_ids']:
+                if int(hal_collection.set_index('Hal_ids')[docid]["Années de publication"]) > end \
+                or int(hal_collection.set_index('Hal_ids')[docid]["Années de publication"]) < start:
+                    return row['Statut_HAL'].replace({"Dans la collection" : "Dans la collection mais année HAL incorrecte",
+                                                      "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
+                                                      "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"
+                                                      })
+
+
+            pass # TODO terminer la fonction pour indiquer que la publi est hors période dans HAL
 
 class HalCollImporter:
     def __init__(self, collection_code: str, start_year_val=None, end_year_val=None):
         self.collection_code = str(collection_code).strip() if collection_code else "" 
         self.start_year = start_year_val if start_year_val is not None else DEFAULT_START_YEAR
         self.end_year = end_year_val if end_year_val is not None else DEFAULT_END_YEAR 
-        
         self.num_docs_in_collection = self._get_num_docs()
 
     def _get_num_docs(self):
@@ -368,7 +383,7 @@ class HalCollImporter:
 
     def import_data(self):
         # Define expected columns including HAL_URI
-        expected_cols = ['Hal_ids', 'DOIs', 'Titres', 'Types de dépôts', 'HAL_URI', 'nti']
+        expected_cols = ['Hal_ids', 'DOIs', 'Titres', 'Types de dépôts', 'Années de publication' ,'HAL_URI', 'nti']
         if self.num_docs_in_collection == 0:
             st.info(f"Aucun document trouvé pour la collection '{self.collection_code or 'HAL global'}' entre {self.start_year} et {self.end_year}.")
             return pd.DataFrame(columns=expected_cols)
@@ -415,6 +430,7 @@ class HalCollImporter:
                             'DOIs': str(doc_data.get('doiId_s', '')).lower() if doc_data.get('doiId_s') else '', 
                             'Titres': str(title_item), 
                             'Types de dépôts': doc_data.get('submitType_s', ''),
+                            'Années de publication': doc_data.get('publicationDateY_i', ''),
                             'HAL_URI': doc_data.get('uri_s', '') # HAL direct URI
                         })
                 pbar_hal.update(len(docs_on_current_page)) 
