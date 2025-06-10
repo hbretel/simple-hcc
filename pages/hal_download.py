@@ -10,7 +10,6 @@ st.markdown("""Donnez le code de la collection HAL dans laquelle vous souhaitez 
 collection_a_chercher = st.text_input(
     "Collection HAL",
     value="",
-    key="hal_collection",
     help="Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)",
 ).upper()
 
@@ -41,4 +40,4 @@ cancel, valid = st.columns(2)
 with cancel:
     reset_session()
 with valid:
-    reach_process(years)
+    reach_process(years,collection_a_chercher)

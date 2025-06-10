@@ -73,9 +73,10 @@ def input_hal_params():
     collection_a_chercher = st.text_input("Collection HAL",value="",key="collection_hal",help="Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)")
     return collection_a_chercher
 
-def reach_process(years, message = "Valider et lancer la comparaison"):
+def reach_process(years, collection_a_chercher, message = "Valider et lancer la comparaison"):
     if st.button(message,type="primary"):
         st.session_state['years'] = years
+        st.session_state['hal_collection'] = collection_a_chercher
         st.session_state['navigation'] = "process.py"
         st.rerun()
 
