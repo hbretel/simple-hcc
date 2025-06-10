@@ -7,6 +7,7 @@ def reset_session(message = "Annuler et reprendre au départ"):
     if st.button(message,type='tertiary'):
         for k in st.session_state.keys():
             del(st.session_state[k])
+        st.session_state['navigation'] = "file_upload.py"
         st.rerun()
 
 def years_picker(start: int = 2020, end: int = datetime.now().year):

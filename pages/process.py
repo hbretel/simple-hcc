@@ -1,21 +1,22 @@
 import streamlit as st
-from utils import check_df
+from utils import check_df, check_annees
 from st_elements import process, reset_session
 from io import BytesIO
 
 st.set_page_config(page_title="HAL collection Checker")
 st.title("Comparaison des données avec HAL")
-merged_data = st.session_state['merged']
-coll_df = process(st.session_state['hal_collection'],
-                  start_year=st.session_state.years['start'] - 1,
-                  end_year=st.session_state.years['end'] + 1)
 
 with st.spinner("Comparaison en cours..."):
+    merged_data = st.session_state['merged']
+    coll_df = process(st.session_state['hal_collection'],
+                    start_year=st.session_state.years['start'] - 1,
+                    end_year=st.session_state.years['end'] + 1)
     progress_bar = st.progress(0, text="Etat d'avancement de la comparaison :" )
     # progress_bar is then managed by check_df
     final_df = check_df(merged_data.copy(), coll_df, progress_bar_st=progress_bar)
+    final_df['Statut_HAL'] = final_df.apply(lambda x : check_annees(x, st.session_state['hal_collection'], st.session_state.years['start'],st.session_state.years['end']))
 st.success("Comparaison avec HAL terminée.")
-
+st.subheader("Résultat de la vérification :")
 st.dataframe(final_df)
 
 if not final_df.empty:
