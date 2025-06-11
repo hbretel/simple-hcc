@@ -346,9 +346,10 @@ def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
         if ident in hal_collection['Hal_ids'].tolist():
             if (hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[ident] > end \
                 or hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[ident] < start):
-                return row['Statut_HAL'].replace({"Dans la collection" : "Dans la collection mais année HAL incorrecte",
-                                          "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
-                                          "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"})
+                    repl = {"Dans la collection" : "Dans la collection mais année HAL incorrecte",
+                                    "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
+                                    "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"}
+                    return row['Statut_HAL'].replace(row['Statut_HAL'],repl.get(row['Statut_HAL']))
     else:
         return row['Statut_HAL']
 
