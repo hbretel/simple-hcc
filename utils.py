@@ -276,7 +276,8 @@ def statut_doi(doi_to_check, collection_df):
         
     return ["Hors HAL", "", "", "", ""] # Ensure 7 elements are returned
 
-def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generator.DeltaGenerator|bool=False):
+def check_df(input_df_to_check, hal_collection_df):
+    progress_bar_st = st.progress(0, text="Etat d'avancement de la comparaison :" )
     if input_df_to_check.empty:
         st.info("Le DataFrame d'entrée pour check_df est vide. Aucune vérification HAL à effectuer.")
         # Ensure output columns exist to prevent downstream errors
@@ -323,9 +324,8 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
         types_depot_hal_list.append(hal_status_result[3])
         hal_uris_list.append(hal_status_result[4]) # HAL URI
         
-        if progress_bar_st:
-            current_progress_val = (index + 1) / total_rows_to_process
-            progress_bar_st.progress(current_progress_val) # type: ignore
+        current_progress_val = (index + 1) / total_rows_to_process
+        progress_bar_st.progress(current_progress_val)
 
     # Add new columns to the DataFrame
     df_to_process['Statut_HAL'] = statuts_hal_list
@@ -334,7 +334,7 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
     df_to_process['type_dépôt_si_trouvé'] = types_depot_hal_list
     df_to_process['URI_HAL_si_trouvé'] = hal_uris_list # This is uri_s
     
-    if progress_bar_st: progress_bar_st.progress(100)  # type: ignore
+    progress_bar_st.progress(100)
     return df_to_process
 
 def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
@@ -350,8 +350,7 @@ def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
                                     "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
                                     "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"}
                     return row['Statut_HAL'].replace(row['Statut_HAL'],repl.get(row['Statut_HAL']))
-    else:
-        return row['Statut_HAL']
+    return row['Statut_HAL']
 
 
 class HalCollImporter:
