@@ -41,7 +41,8 @@ with csv_b:
         label="Télécharger les résultats en CSV",
         data=csv_export,
         file_name=output_csv_name,
-        mime="text/csv"
+        mime="text/csv",
+        on_click="ignore"
     )
 
 with excel_b:    
@@ -50,5 +51,6 @@ with excel_b:
         label="Télécharger les résultats en .xlsx",
         data=df_xlsx,
         file_name=output_xlsx_name,
-        mime="application/vnd.ms-excel"
+        mime="application/vnd.ms-excel",
+        on_click="ignore"
     )

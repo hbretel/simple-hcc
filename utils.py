@@ -338,12 +338,14 @@ def check_df(input_df_to_check, hal_collection_df, progress_bar_st:delta_generat
     return df_to_process
 
 def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
+    hal_collection = hal_collection.drop_duplicates("Hal_ids")
     if row['Statut_HAL'] in ["Dans la collection", 
                              "Titre trouvé dans la collection : probablement déjà présent",
                              "Titre approchant trouvé dans la collection : à vérifier"]:
-        if row["identifiant_hal_si_trouvé"] in hal_collection['Hal_ids'].tolist():
-            if (hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[row["identifiant_hal_si_trouvé"]] > end \
-                or hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[row["identifiant_hal_si_trouvé"]] < start):
+        ident = str(int(row["identifiant_hal_si_trouvé"]))
+        if ident in hal_collection['Hal_ids'].tolist():
+            if (hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[ident] > end \
+                or hal_collection.set_index('Hal_ids')["Années de publication"].astype(int)[ident] < start):
                 return row['Statut_HAL'].replace({"Dans la collection" : "Dans la collection mais année HAL incorrecte",
                                           "Titre trouvé dans la collection : probablement déjà présent":"Titre trouvé dans la collection mais date HAL erronée",
                                           "Titre approchant trouvé dans la collection : à vérifier":"Titre approchant trouvé dans la collection mais date HAL erronée"})
