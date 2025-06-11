@@ -8,7 +8,7 @@ def reset_session(message = "Annuler et reprendre au départ"):
         for k in st.session_state.keys():
             del(st.session_state[k])
         st.session_state['navigation'] = "file_upload.py"
-        st.rerun()
+        st.rerun(scope='app')
 
 def years_picker(start: int = 2020, end: int = datetime.now().year):
     col1_dates, col2_dates, spacer_col = st.columns(3)

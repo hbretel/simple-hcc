@@ -31,7 +31,7 @@ output_xlsx_name = f"{filename_coll_part}_traite_{st.session_state.years['start'
 
 cancel, csv_b,excel_b = st.columns(3)
 with cancel:
-    reset_session("Recommencer avec d'autres paramètres")
+    reset_session(message="Commencer une nouvelle vérification")
     
 with csv_b:
     st.download_button(
