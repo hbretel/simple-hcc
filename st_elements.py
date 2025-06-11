@@ -23,7 +23,7 @@ def years_picker(start: int = 2020, end: int = datetime.now().year):
 def valid_stage_1(message = "Vérifier les publications et continuer"):
     if st.button(message,type="primary"):
         if ("file_df" in st.session_state and isinstance(st.session_state.file_df, pd.DataFrame)) or ("openalex_df" in st.session_state and isinstance(st.session_state.openalex_df, pd.DataFrame)):
-            st.session_state['navigation'] = "validation_stage1.py"
+            st.session_state['navigation'] = "hal_download.py"
             st.rerun()
         else:
             st.warning("Pas de publications chargées : chargez un fichier ou ajoutez des données OpenAlex.")
