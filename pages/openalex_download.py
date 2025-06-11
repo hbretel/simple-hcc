@@ -6,7 +6,8 @@ from utils import get_openalex_data, convert_to_dataframe, clean_doi
 st.set_page_config(page_title="HAL collection Checker")
 st.title("Structure OpenAlex à comparer")
 st.markdown("""Indiquez l'identifiant OpenAlex du laboratoire ou de la structure dont vous souhaitez vérifier que les publications sont présentes sur HAL. Pour l'instant, seuls les identifiants de structures sont pris en charge, pas les identifiants d'auteurs. Pour trouver l'identifiant OpenAlex d'une structure, allez sur [OpenAlex](https://openalex.org) et cherchez la structure. Si elle apparaît dans les propositions du moteur de recherche, cliquez sur l'icône d'information (i) à droite de son nom. Ceci vous mènera à la page de la structure. L'url de cette page se termine par l'identifiant de la structure, composé de la lettre i suivie de 10 chiffres.""")
-
+if "navigation" in st.session_state.keys():
+    del (st.session_state["navigation"])
 
 openalex_institution_id = st.text_input("Identifiant OpenAlex du labo", help="Saisissez l'identifiant du labo dans OpenAlex (ex: i4210093696 pour CIAMS).")
 if "years" in st.session_state:

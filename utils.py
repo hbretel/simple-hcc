@@ -7,6 +7,7 @@ from unidecode import unidecode
 from difflib import get_close_matches
 from tqdm import tqdm
 from streamlit import delta_generator
+from io import BytesIO
 
 tqdm.pandas()
 
@@ -352,6 +353,23 @@ def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
                     return row['Statut_HAL'].replace(row['Statut_HAL'],repl.get(row['Statut_HAL']))
     return row['Statut_HAL']
 
+def merge_dataframes(openalex_df,file_df):
+        combined_df = pd.concat([openalex_df, file_df], ignore_index=True)
+        combined_df['doi'] = combined_df['doi'].apply( lambda x :clean_doi(x.lower().strip()) if isinstance(x,str) else pd.NA)
+        with_doi_df = combined_df[combined_df['doi'].notna()].copy()
+        without_doi_df = combined_df[combined_df['doi'].isna()].copy()
+        if not with_doi_df.empty:
+            merged_data_doi = with_doi_df.drop_duplicates(subset='doi', ignore_index=True)
+        else:
+            merged_data_doi=pd.DataFrame()
+        merged_data = pd.concat([merged_data_doi, without_doi_df], ignore_index=True)
+        return merged_data
+
+def to_excel(df):
+    output = BytesIO()
+    xlsx_export = df.to_excel(output, index=False)
+    processed_data = output.getvalue()
+    return processed_data
 
 class HalCollImporter:
     def __init__(self, collection_code: str, start_year_val=None, end_year_val=None):

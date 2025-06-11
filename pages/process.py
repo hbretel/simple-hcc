@@ -1,10 +1,12 @@
 import streamlit as st
-from utils import check_df, check_annees
+from utils import check_df, check_annees, to_excel
 from st_elements import fetch_hal_col, reset_session
-from io import BytesIO
+
 
 st.set_page_config(page_title="HAL collection Checker")
 st.title("Comparaison des données avec HAL")
+if "navigation" in st.session_state.keys():
+    del (st.session_state["navigation"])
 
 merged_data = st.session_state['merged']
 coll_df = fetch_hal_col(st.session_state['hal_collection'],
@@ -17,19 +19,17 @@ st.success("Comparaison avec HAL terminée.")
 st.subheader("Résultat de la vérification :")
 st.dataframe(final_df)
 
-def to_excel(df):
-    output = BytesIO()
-    xlsx_export = df.to_excel(output, index=False)
-    processed_data = output.getvalue()
-    return processed_data
-
-
 csv_export = final_df.to_csv(index=False, encoding='utf-8-sig')
 filename_coll_part = str(st.session_state['hal_collection']).replace(" ", "_") if st.session_state['hal_collection'] else "HAL_global"
-output_csv_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}-{st.session_state.years['end']}.csv"
-output_xlsx_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}-{st.session_state.years['end']}.xlsx"
+if st.session_state.years['start'] != st.session_state.years['end']:
+    output_csv_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}-{st.session_state.years['end']}.csv"
+    output_xlsx_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}-{st.session_state.years['end']}.xlsx"
+else:
+    output_csv_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}.csv"
+    output_xlsx_name = f"{filename_coll_part}_traite_{st.session_state.years['start']}.xlsx"
 
 cancel, csv_b,excel_b = st.columns(3)
+
 with cancel:
     reset_session(message="Commencer une nouvelle vérification")
     
