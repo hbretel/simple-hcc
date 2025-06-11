@@ -23,7 +23,6 @@ def years_picker(start: int = 2020, end: int = datetime.now().year):
 def valid_stage_1(message = "Vérifier les publications et continuer"):
     if st.button(message,type="primary"):
         if isinstance(st.session_state.file_df, pd.DataFrame) or isinstance(st.session_state.openalex_df, pd.DataFrame):
-
             st.session_state['navigation'] = "validation_stage1.py"
             st.rerun()
         else:

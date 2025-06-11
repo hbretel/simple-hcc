@@ -26,7 +26,6 @@ with st.container(height=70,border=False):
     with phrase:
         st.markdown("Nombre de documents à importer de HAL selon les paramètres actuels : ")
     with number:
-        # Debounce ?
         value1=[years['start'],years['end'],collection_a_chercher]
         time.sleep(0.5)
         value2=[years['start'],years['end'],collection_a_chercher]
