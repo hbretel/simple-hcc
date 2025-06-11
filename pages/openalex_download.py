@@ -12,15 +12,16 @@ openalex_institution_id = st.text_input("Identifiant OpenAlex du labo", help="Sa
 if "years" in st.session_state:
     start_year = st.session_state.years['start']
     end_year = st.session_state.years['end']
-    st.session_state.years = years_picker(start=start_year, end=end_year)
+    years = years_picker(start=start_year, end=end_year)
 else:
-    st.session_state.years = years_picker()
+    years = years_picker()
+
 
 if openalex_institution_id:
-    start_year = st.session_state.years['start']
-    end_year = st.session_state.years['end']
+    start_year = years['start']
+    end_year = years['end']
     openalex_query = f"authorships.institutions.id:{openalex_institution_id},publication_year:{start_year}-{end_year}"
-    openalex_data = get_openalex_data(openalex_query, max_items=10000) 
+    openalex_data = get_openalex_data(openalex_query, max_items=10000)
     if openalex_data:
         openalex_df = convert_to_dataframe(openalex_data, 'openalex')
         try:
@@ -42,8 +43,8 @@ if openalex_institution_id:
         openalex_df = openalex_df[[col for col in cols_to_keep if col in openalex_df.columns]]
         if 'doi' in openalex_df.columns:
             openalex_df['doi'] = openalex_df['doi'].apply(clean_doi)
-
         st.session_state['openalex_df'] = openalex_df
+        st.session_state.years = years
 
 cancel, add_file, valid = st.columns(3)
 with cancel:
