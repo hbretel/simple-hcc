@@ -6,8 +6,6 @@ from utils import merge_dataframes
 st.set_page_config(page_title="HAL collection Checker")
 st.title("Vérification et fusion des publications")
 st.write("Le tableau ci-dessous présente les données qui seront comparées avec la collection HAL que vous choisirez. Vérifiez qu'elles sont correctes. Si vous avez utilisé des données provenant à la fois d'un fichier et d'OpenAlex, il se peut que la fusion ait occasionné quelques doublons. Si les données ne sont pas correctes, vous pouvez les changer en revenant soit à la page de versement du fichier, soit à la page de recherche de données OpenAlex. Si elles sont correctes, vous pouvez passer à l'étape de paramétrage de la collection HAL qui servira de référence.")
-if "navigation" in st.session_state.keys():
-    del (st.session_state["navigation"])
 
 file_df = st.session_state.file_df if "file_df" in st.session_state else None
 openalex_df = st.session_state.openalex_df if "openalex_df" in st.session_state else None

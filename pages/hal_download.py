@@ -6,8 +6,6 @@ import time
 st.set_page_config(page_title="HAL collection Checker")
 st.title("Collection HAL à utiliser comme référence")
 st.markdown("""Donnez le code de la collection HAL dans laquelle vous souhaitez vérifier que vos publications se trouvent. nUn code de collection est une suite de lettres majuscules éventuellement séparées par des tirets, il peut rassembler les publications de n'importe quel type d'entité, auteur, structure, thématique etc. Vous pouvez modifier les années limites qui vous sont proposées, de manière à cibler uniquement la période qui vous intéresse.""")
-if "navigation" in st.session_state.keys():
-    del (st.session_state["navigation"])
 
 collection_a_chercher = st.text_input(
     "Collection HAL",
