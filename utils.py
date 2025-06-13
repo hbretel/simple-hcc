@@ -277,65 +277,66 @@ def statut_doi(doi_to_check, collection_df):
     return ["Hors HAL", "", "", "", ""] # Ensure 7 elements are returned
 
 def check_df(input_df_to_check, hal_collection_df):
-    progress_bar_st = st.progress(0, text="Etat d'avancement de la comparaison :" )
-    if input_df_to_check.empty:
-        st.info("Le DataFrame d'entrée pour check_df est vide. Aucune vérification HAL à effectuer.")
-        # Ensure output columns exist to prevent downstream errors
-        hal_output_cols = ['Statut_HAL', 'titre_HAL_si_trouvé', 'identifiant_hal_si_trouvé', 
-                           'type_dépôt_si_trouvé', 'URI_HAL_si_trouvé']
-        for col_name in hal_output_cols:
-            if col_name not in input_df_to_check.columns:
-                input_df_to_check[col_name] = pd.NA
-        return input_df_to_check
+    with st.spinner("Comparaison en cours..."):
+        progress_bar_st = st.progress(0, text="Etat d'avancement de la comparaison :" )
+        if input_df_to_check.empty:
+            st.info("Le DataFrame d'entrée pour check_df est vide. Aucune vérification HAL à effectuer.")
+            # Ensure output columns exist to prevent downstream errors
+            hal_output_cols = ['Statut_HAL', 'titre_HAL_si_trouvé', 'identifiant_hal_si_trouvé', 
+                            'type_dépôt_si_trouvé', 'URI_HAL_si_trouvé']
+            for col_name in hal_output_cols:
+                if col_name not in input_df_to_check.columns:
+                    input_df_to_check[col_name] = pd.NA
+            return input_df_to_check
 
-    df_to_process = input_df_to_check.copy() 
+        df_to_process = input_df_to_check.copy() 
 
-    # Initialize lists for storing HAL comparison results
-    statuts_hal_list = []
-    titres_hal_list = []
-    ids_hal_list = []
-    types_depot_hal_list = []
-    hal_uris_list = [] # Direct HAL URIs (uri_s)
+        # Initialize lists for storing HAL comparison results
+        statuts_hal_list = []
+        titres_hal_list = []
+        ids_hal_list = []
+        types_depot_hal_list = []
+        hal_uris_list = [] # Direct HAL URIs (uri_s)
 
 
-    total_rows_to_process = len(df_to_process)
-    for index, row_to_check in tqdm(df_to_process.iterrows(), total=total_rows_to_process, desc="Vérification HAL (check_df)"):
-        doi_value_from_row = row_to_check.get('doi') 
-        title_value_from_row = row_to_check.get('Title') 
+        total_rows_to_process = len(df_to_process)
+        for index, row_to_check in tqdm(df_to_process.iterrows(), total=total_rows_to_process, desc="Vérification HAL (check_df)"):
+            doi_value_from_row = row_to_check.get('doi') 
+            title_value_from_row = row_to_check.get('Title') 
 
-        # Default result structure: [status, title, docid, submit_type, hal_uri]
-        hal_status_result = ["Pas de DOI valide", "", "", "", ""] 
+            # Default result structure: [status, title, docid, submit_type, hal_uri]
+            hal_status_result = ["Pas de DOI valide", "", "", "", ""] 
+            
+            if pd.notna(doi_value_from_row) and str(doi_value_from_row).strip():
+                hal_status_result = statut_doi(str(doi_value_from_row), hal_collection_df)
+            
+            # If DOI search was not conclusive or DOI was invalid, try by title
+            if hal_status_result[0] not in ("Dans la collection", "Dans HAL mais hors de la collection"):
+                if pd.notna(title_value_from_row) and str(title_value_from_row).strip():
+                    hal_status_result = statut_titre(str(title_value_from_row), hal_collection_df)
+                elif not (pd.notna(doi_value_from_row) and str(doi_value_from_row).strip()): 
+                    # If neither DOI nor Title are valid
+                    hal_status_result = ["Données d'entrée insuffisantes (ni DOI ni Titre)", "",  "", "", ""]
+            
+            # Append results to lists
+            statuts_hal_list.append(hal_status_result[0])
+            titres_hal_list.append(hal_status_result[1]) 
+            ids_hal_list.append(hal_status_result[2])
+            types_depot_hal_list.append(hal_status_result[3])
+            hal_uris_list.append(hal_status_result[4]) # HAL URI
+            
+            current_progress_val = (index + 1) / total_rows_to_process
+            progress_bar_st.progress(current_progress_val)
+
+        # Add new columns to the DataFrame
+        df_to_process['Statut_HAL'] = statuts_hal_list
+        df_to_process['titre_HAL_si_trouvé'] = titres_hal_list
+        df_to_process['identifiant_hal_si_trouvé'] = ids_hal_list
+        df_to_process['type_dépôt_si_trouvé'] = types_depot_hal_list
+        df_to_process['URI_HAL_si_trouvé'] = hal_uris_list # This is uri_s
         
-        if pd.notna(doi_value_from_row) and str(doi_value_from_row).strip():
-            hal_status_result = statut_doi(str(doi_value_from_row), hal_collection_df)
-        
-        # If DOI search was not conclusive or DOI was invalid, try by title
-        if hal_status_result[0] not in ("Dans la collection", "Dans HAL mais hors de la collection"):
-            if pd.notna(title_value_from_row) and str(title_value_from_row).strip():
-                hal_status_result = statut_titre(str(title_value_from_row), hal_collection_df)
-            elif not (pd.notna(doi_value_from_row) and str(doi_value_from_row).strip()): 
-                # If neither DOI nor Title are valid
-                hal_status_result = ["Données d'entrée insuffisantes (ni DOI ni Titre)", "",  "", "", ""]
-        
-        # Append results to lists
-        statuts_hal_list.append(hal_status_result[0])
-        titres_hal_list.append(hal_status_result[1]) 
-        ids_hal_list.append(hal_status_result[2])
-        types_depot_hal_list.append(hal_status_result[3])
-        hal_uris_list.append(hal_status_result[4]) # HAL URI
-        
-        current_progress_val = (index + 1) / total_rows_to_process
-        progress_bar_st.progress(current_progress_val)
-
-    # Add new columns to the DataFrame
-    df_to_process['Statut_HAL'] = statuts_hal_list
-    df_to_process['titre_HAL_si_trouvé'] = titres_hal_list
-    df_to_process['identifiant_hal_si_trouvé'] = ids_hal_list
-    df_to_process['type_dépôt_si_trouvé'] = types_depot_hal_list
-    df_to_process['URI_HAL_si_trouvé'] = hal_uris_list # This is uri_s
-    
-    progress_bar_st.progress(100)
-    return df_to_process
+        progress_bar_st.empty()
+        return df_to_process
 
 def check_annees(row, hal_collection : pd.DataFrame,start : int, end : int):
     hal_collection = hal_collection.drop_duplicates("Hal_ids")

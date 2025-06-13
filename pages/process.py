@@ -1,10 +1,10 @@
 import streamlit as st
 from utils import check_df, check_annees, to_excel
-from st_elements import fetch_hal_col, reset_session
+from st_elements import fetch_hal_col, reset_session, page_setup
+import os
+com_loc,spec_loc = page_setup(os.path.basename(__file__).replace(".py",""))
 
 
-st.set_page_config(page_title="HAL collection Checker")
-st.title("Comparaison des données avec HAL")
 if "navigation" in st.session_state.keys():
     del (st.session_state["navigation"])
 
@@ -15,8 +15,8 @@ coll_df = fetch_hal_col(st.session_state['hal_collection'],
 
 final_df = check_df(merged_data.copy(), coll_df)
 final_df['Statut_HAL'] = final_df.apply(lambda x : check_annees(x, coll_df, st.session_state.years['start'],st.session_state.years['end']),axis=1)
-st.success("Comparaison avec HAL terminée.")
-st.subheader("Résultat de la vérification :")
+st.success(spec_loc["success"])
+st.subheader(spec_loc["verif"])
 st.dataframe(final_df)
 
 csv_export = final_df.to_csv(index=False, encoding='utf-8-sig')
@@ -31,11 +31,11 @@ else:
 cancel, csv_b,excel_b = st.columns(3)
 
 with cancel:
-    reset_session(message="Commencer une nouvelle vérification")
+    reset_session(message=spec_loc["cancel_btn"])
     
 with csv_b:
     st.download_button(
-        label="Télécharger les résultats en CSV",
+        label=spec_loc["csv_dwnl"],
         data=csv_export,
         file_name=output_csv_name,
         mime="text/csv",
@@ -45,7 +45,7 @@ with csv_b:
 with excel_b:    
     df_xlsx = to_excel(final_df)
     st.download_button(
-        label="Télécharger les résultats en .xlsx",
+        label=spec_loc["xlsx_dwnl"],
         data=df_xlsx,
         file_name=output_xlsx_name,
         mime="application/vnd.ms-excel",

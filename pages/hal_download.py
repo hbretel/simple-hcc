@@ -1,16 +1,14 @@
 import streamlit as st
-from st_elements import years_picker, reset_session, reach_process
+from st_elements import years_picker, reset_session, reach_process, page_setup
+import os
+com_loc,spec_loc = page_setup(os.path.basename(__file__).replace(".py",""))
 from utils import HalCollImporter
 import time
 
-st.set_page_config(page_title="HAL collection Checker")
-st.title("Collection HAL à utiliser comme référence")
-st.markdown("""Donnez le code de la collection HAL dans laquelle vous souhaitez vérifier que vos publications se trouvent. nUn code de collection est une suite de lettres majuscules éventuellement séparées par des tirets, il peut rassembler les publications de n'importe quel type d'entité, auteur, structure, thématique etc. Vous pouvez modifier les années limites qui vous sont proposées, de manière à cibler uniquement la période qui vous intéresse.""")
-
 collection_a_chercher = st.text_input(
-    "Collection HAL",
+    spec_loc["collection_a_chercher_lbl"],
     value="",
-    help="Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)",
+    help=spec_loc["collection_a_chercher_hlp"]
 ).upper()
 
 if "years" in st.session_state:
@@ -24,7 +22,7 @@ with st.container(height=70,border=False):
     st.write(" ")
     phrase, number = st.columns([0.8,0.2])
     with phrase:
-        st.markdown("Nombre de documents à importer de HAL selon les paramètres actuels : ")
+        st.markdown(spec_loc["result_phrase"])
     with number:
         value1=[years['start'],years['end'],collection_a_chercher]
         time.sleep(0.5)

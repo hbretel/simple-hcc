@@ -1,0 +1,53 @@
+{
+    "app_name":"HAL collection Checker",
+    "st_elements":{
+        "reach_hal_btn":"Paramétrer la collection HAL",
+        "reset_session_btn":"Annuler et reprendre au départ",
+        "start_year":"Année de début",
+        "end_year":"Année de fin",
+        "valid_stg1_btn":"Vérifier les publications et continuer",
+        "valid_stg1_wrn":"Pas de publications chargées : chargez un fichier ou ajoutez des données OpenAlex.",
+        "reach_openalex_btn":"Ajouter des publications OpenAlex",
+        "reach_file_upl_btn":"Ajouter des publications à partir d'un fichier",
+        "input_hal_lbl":"Collection HAL",
+        "input_hal_hlp":"Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)",
+        "reach_process_btn":"Valider et lancer la comparaison",
+        "fetch_hal_wrn":"La collection HAL '{cac}' est vide ou n'a pas pu être chargée pour les années {sty}-{ey}."},
+    "file_upload":{
+        "title":"Fichier de publications à comparer",
+        "help_short":"Choisissez le fichier contenant les publications dont vous voulez savoir si elles sont présentes sur HAL.",
+        "help_lng_sh":"Bienvenue sur :blue[**HAL Collection checker**]",
+        "help_lng_md":"L'objectif de cet outil est de vous permettre de vérifier si des publications dont vous avez la liste sont présentes dans la collection HAL de votre choix.\nPour commencer, choisissez un fichier contenant les publications dont vous voulez savoir si elles sont présentes sur HAL.\nCe fichier peut être issu de la source de votre choix (Scopus, Web of Science, Pubmed, ArXiv, HAL, une base de donnée locale...) : il doit seulement être au format csv ou Excel, et contenir au moins une colonne de DOI et une colonnes de titres, chaque ligne représentant une publication dont vous souhaitez savoir si elle se trouve sur HAL, et le cas échéant si elle est correctement attribuée à la collection de votre choix.",
+        "uploaded_file_lbl":"Téléversez un fichier CSV ou Excel",
+        "uploaded_file_hlp":"Votre fichier CSV ou Excel doit contenir au minimum une colonne 'doi' et une colonne 'Title'.",
+        "upload_error":"Erreur lors de la lecture du fichier CSV : {e}"
+    },
+    "hal_download":{
+        "title": "Collection HAL à utiliser comme référence",
+        "help": "Donnez le code de la collection HAL dans laquelle vous souhaitez vérifier que vos publications se trouvent. \nUn code de collection est une suite de lettres majuscules éventuellement séparées par des tirets, il peut rassembler les publications de n'importe quel type d'entité, auteur, structure, thématique etc. Vous pouvez modifier les années limites qui vous sont proposées, de manière à cibler uniquement la période qui vous intéresse.",
+        "collection_a_chercher_lbl":"Collection HAL",
+        "collection_a_chercher_hlp":"Saisissez le code de la collection HAL du laboratoire (ex: CIAMS)",
+        "result_phrase":"Nombre de documents à importer de HAL selon les paramètres actuels : "
+    },
+    "openalex_download":{
+        "title":"Structure OpenAlex à comparer",
+        "help":"Indiquez l'identifiant OpenAlex du laboratoire ou de la structure dont vous souhaitez vérifier que les publications sont présentes sur HAL. Pour l'instant, seuls les identifiants de structures sont pris en charge, pas les identifiants d'auteurs. Pour trouver l'identifiant OpenAlex d'une structure, allez sur [OpenAlex](https://openalex.org) et cherchez la structure. Si elle apparaît dans les propositions du moteur de recherche, cliquez sur l'icône d'information (i) à droite de son nom. Ceci vous mènera à la page de la structure. L'url de cette page se termine par l'identifiant de la structure, composé de la lettre i suivie de 10 chiffres.",
+        "openalex_id_lbl":"Identifiant OpenAlex du labo",
+        "openalex_id_hlp":"Saisissez l'identifiant du labo dans OpenAlex (ex: i4210093696 pour CIAMS)."
+    },
+    "process":{
+        "title": "Comparaison des données avec HAL",
+        "success":"Comparaison avec HAL terminée.",
+        "verif":"Résultat de la vérification :",
+        "cancel_btn":"Commencer une nouvelle vérification",
+        "csv_dwnl":"Télécharger les résultats en CSV",
+        "xlsx_dwnl":"Télécharger les résultats en .xlsx"
+    },
+    "validation_stage1":{
+        "title": "Vérification et fusion des publications",
+        "help":"Le tableau ci-dessous présente les données qui seront comparées avec la collection HAL que vous choisirez. Vérifiez qu'elles sont correctes. Si vous avez utilisé des données provenant à la fois d'un fichier et d'OpenAlex, il se peut que la fusion ait occasionné quelques doublons. Si les données ne sont pas correctes, vous pouvez les changer en revenant soit à la page de versement du fichier, soit à la page de recherche de données OpenAlex. Si elles sont correctes, vous pouvez passer à l'étape de paramétrage de la collection HAL qui servira de référence.",
+        "reach_file_upl_btn":"Revenir à l'import de fichier",
+        "reach_openalex_btn":"Revenir à l'import OpenAlex",
+        "reach_hal_btn":"Valider et passer aux paramètres HAL"
+    }
+}

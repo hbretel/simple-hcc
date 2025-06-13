@@ -1,14 +1,11 @@
 import streamlit as st
 import pandas as pd
-from st_elements import years_picker, reset_session, reach_file_upload_page
+from st_elements import years_picker, reset_session, reach_file_upload_page, page_setup
+import os
+com_loc,spec_loc = page_setup(os.path.basename(__file__).replace(".py",""))
 from utils import get_openalex_data, convert_to_dataframe, clean_doi
 
-st.set_page_config(page_title="HAL collection Checker")
-st.title("Structure OpenAlex à comparer")
-st.markdown("""Indiquez l'identifiant OpenAlex du laboratoire ou de la structure dont vous souhaitez vérifier que les publications sont présentes sur HAL. Pour l'instant, seuls les identifiants de structures sont pris en charge, pas les identifiants d'auteurs. Pour trouver l'identifiant OpenAlex d'une structure, allez sur [OpenAlex](https://openalex.org) et cherchez la structure. Si elle apparaît dans les propositions du moteur de recherche, cliquez sur l'icône d'information (i) à droite de son nom. Ceci vous mènera à la page de la structure. L'url de cette page se termine par l'identifiant de la structure, composé de la lettre i suivie de 10 chiffres.""")
-
-
-openalex_institution_id = st.text_input("Identifiant OpenAlex du labo", help="Saisissez l'identifiant du labo dans OpenAlex (ex: i4210093696 pour CIAMS).")
+openalex_institution_id = st.text_input(spec_loc["openalex_id_lbl"], help=spec_loc["openalex_id_hlp"])
 if "years" in st.session_state:
     start_year = st.session_state.years['start']
     end_year = st.session_state.years['end']
@@ -27,7 +24,7 @@ with add_file:
     reach_file_upload_page()
 
 with valid:
-    if st.button("Vérifier les publications et continuer",type="primary"):
+    if st.button(com_loc["valid_stg1_btn"],type="primary"):
         if openalex_institution_id:
             start_year = years['start']
             end_year = years['end']
@@ -58,4 +55,4 @@ with valid:
             st.session_state['navigation'] = "validation_stage1.py"
             st.rerun()
         else:
-            st.warning("Pas de publications chargées : chargez un fichier ou ajoutez des données OpenAlex.")
+            st.warning(com_loc["valid_stg1_wrn"])
